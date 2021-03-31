@@ -17,12 +17,6 @@ defmodule RealEstateWeb.Router do
     plug :accepts, ["json"]
   end
 
-  scope "/", RealEstateWeb do
-    pipe_through :browser
-
-    live "/", PageLive, :index
-  end
-
   # Other scopes may use custom stacks.
   # scope "/api", RealEstateWeb do
   #   pipe_through :api
@@ -65,6 +59,9 @@ defmodule RealEstateWeb.Router do
     get "/users/settings", UserSettingsController, :edit
     put "/users/settings", UserSettingsController, :update
     get "/users/settings/confirm_email/:token", UserSettingsController, :confirm_email
+
+    # This line was moved
+    live "/", PageLive, :index
   end
 
   scope "/", RealEstateWeb do
