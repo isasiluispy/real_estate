@@ -43,6 +43,15 @@ defmodule RealEstate.Accounts.User do
     |> validate_password(opts)
   end
 
+  @doc """
+  A user changeset for registering admins.
+  """
+  def admin_registration_changeset(user, attrs) do
+    user
+    |> registration_changeset(attrs)
+    |> set_admin_role()
+  end
+
   defp validate_email(changeset) do
     changeset
     |> validate_required([:email])
@@ -73,6 +82,11 @@ defmodule RealEstate.Accounts.User do
     else
       changeset
     end
+  end
+
+  defp set_admin_role(changeset) do
+    changeset
+    |> put_change(:role, :admin)
   end
 
   @doc """
