@@ -48,7 +48,6 @@ defmodule RealEstateWeb do
         layout: {RealEstateWeb.LayoutView, "live.html"}
 
       unquote(view_helpers())
-      import RealEstateWeb.LiveHelpers
     end
   end
 
@@ -84,6 +83,7 @@ defmodule RealEstateWeb do
 
       # Import LiveView helpers (live_render, live_component, live_patch, etc)
       import Phoenix.LiveView.Helpers
+      import RealEstateWeb.LiveHelpers
 
       # Import basic rendering functionality (render, render_layout, etc)
       import Phoenix.View
