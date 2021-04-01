@@ -2,6 +2,7 @@ defmodule RealEstateWeb.Router do
   use RealEstateWeb, :router
 
   import RealEstateWeb.UserAuth
+  alias RealEstateWeb.EnsureRolePlug
 
   pipeline :browser do
     plug :accepts, ["html"]
@@ -11,6 +12,14 @@ defmodule RealEstateWeb.Router do
     plug :protect_from_forgery
     plug :put_secure_browser_headers
     plug :fetch_current_user
+  end
+
+  pipeline :user do
+    plug EnsureRolePlug, [:admin, :user]
+  end
+
+  pipeline :admin do
+    plug EnsureRolePlug, :admin
   end
 
   pipeline :api do
@@ -71,5 +80,17 @@ defmodule RealEstateWeb.Router do
     get "/users/confirm", UserConfirmationController, :new
     post "/users/confirm", UserConfirmationController, :create
     get "/users/confirm/:token", UserConfirmationController, :confirm
+  end
+
+  scope "/", RealEstateWeb do
+    pipe_through [:browser, :require_authenticated_user, :user]
+
+    live "/user_dashboard", UserDashboardLive, :index
+  end
+
+  scope "/", RealEstateWeb do
+    pipe_through [:browser, :require_authenticated_user, :admin]
+
+    live "/admin_dashboard", AdminDashboardLive, :index
   end
 end
