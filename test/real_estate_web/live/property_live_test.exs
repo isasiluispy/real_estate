@@ -10,22 +10,25 @@ defmodule RealEstateWeb.PropertyLiveTest do
   @update_attrs %{description: "some updated description", name: "some updated name", price: "456.7"}
   @invalid_attrs %{description: nil, name: nil, price: nil}
 
-  defp fixture(:property) do
-    {:ok, property} = Properties.create_property(@create_attrs)
+  defp fixture(:property, user) do
+    create_attributes = Enum.into(%{user_id: user.id}, @create_attrs)
+    {:ok, property} = Properties.create_property(create_attributes)
     property
   end
 
-  defp create_property(_) do
-    property = fixture(:property)
-    %{property: property}
-  end
-
   describe "Index" do
-    setup [:create_property]
-
     setup %{conn: conn} do
-      conn = log_in_user(conn, user_fixture())
-      %{conn: conn}
+      user = user_fixture()
+      conn = log_in_user(conn, user)
+      property = fixture(:property, user)
+      property_from_another_user = fixture(:property, user_fixture())
+
+      %{
+        conn: conn,
+        property: property,
+        property_from_another_user: property_from_another_user,
+        user: user
+      }
     end
 
     test "lists all properties", %{conn: conn, property: property} do
@@ -45,7 +48,7 @@ defmodule RealEstateWeb.PropertyLiveTest do
 
       assert index_live
              |> form("#property-form", property: @invalid_attrs)
-             |> render_change() =~ "can&apos;t be blank"
+             |> render_change() =~ "can&#39;t be blank"
 
       {:ok, _, html} =
         index_live
@@ -67,7 +70,7 @@ defmodule RealEstateWeb.PropertyLiveTest do
 
       assert index_live
              |> form("#property-form", property: @invalid_attrs)
-             |> render_change() =~ "can&apos;t be blank"
+             |> render_change() =~ "can&#39;t be blank"
 
       {:ok, _, html} =
         index_live
@@ -88,11 +91,18 @@ defmodule RealEstateWeb.PropertyLiveTest do
   end
 
   describe "Show" do
-    setup [:create_property]
-
     setup %{conn: conn} do
-      conn = log_in_user(conn, user_fixture())
-      %{conn: conn}
+      user = user_fixture()
+      conn = log_in_user(conn, user)
+      property = fixture(:property, user)
+      property_from_another_user = fixture(:property, user_fixture())
+
+      %{
+        conn: conn,
+        property: property,
+        property_from_another_user: property_from_another_user,
+        user: user
+      }
     end
 
     test "displays property", %{conn: conn, property: property} do
@@ -112,7 +122,7 @@ defmodule RealEstateWeb.PropertyLiveTest do
 
       assert show_live
              |> form("#property-form", property: @invalid_attrs)
-             |> render_change() =~ "can&apos;t be blank"
+             |> render_change() =~ "can&#39;t be blank"
 
       {:ok, _, html} =
         show_live
