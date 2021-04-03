@@ -1,5 +1,8 @@
 # RealEstate
 
+See full article [here](https://www.leanpanda.com/blog/authentication-and-authorisation-in-phoenix-liveview/).
+See the used code [here](https://github.com/leanpanda-com/liveview-authorisation)
+
 To start your Phoenix server:
 
   * Install dependencies with `mix deps.get`
