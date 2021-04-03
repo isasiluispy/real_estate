@@ -88,6 +88,83 @@ defmodule RealEstateWeb.PropertyLiveTest do
       assert index_live |> element("#property-#{property.id} a", "Delete") |> render_click()
       refute has_element?(index_live, "#property-#{property.id}")
     end
+
+    test "can see property from from other user in listing",
+         %{
+           conn: conn,
+           property_from_another_user: property
+         } do
+      {:ok, index_live, _html} = live(conn, Routes.property_index_path(conn, :index))
+
+      assert has_element?(index_live, "#property-#{property.id}")
+    end
+
+    test "can't see edit action for property from other user in listing",
+         %{
+           conn: conn,
+           property_from_another_user: property
+         } do
+      {:ok, index_live, _html} = live(conn, Routes.property_index_path(conn, :index))
+
+      refute has_element?(index_live, "#property-#{property.id} a", "Edit")
+    end
+
+    test "as an admin, I can update property from other user in listing", %{
+      conn: conn,
+      property_from_another_user: property
+    } do
+      conn = log_in_user(conn, admin_fixture())
+
+      {:ok, index_live, _html} = live(conn, Routes.property_index_path(conn, :index))
+
+      assert index_live |> element("#property-#{property.id} a", "Edit") |> render_click() =~
+               "Edit Property"
+
+      assert_patch(index_live, Routes.property_index_path(conn, :edit, property))
+
+      assert index_live
+             |> form("#property-form", property: @invalid_attrs)
+             |> render_change() =~ "can&#39;t be blank"
+
+      {:ok, _, html} =
+        index_live
+        |> form("#property-form", property: @update_attrs)
+        |> render_submit()
+        |> follow_redirect(conn, Routes.property_index_path(conn, :index))
+
+      assert html =~ "Property updated successfully"
+      assert html =~ "some updated description"
+    end
+
+    test "can't see delete action for property from other user in listing", %{
+      conn: conn,
+      property_from_another_user: property
+    } do
+      {:ok, index_live, _html} = live(conn, Routes.property_index_path(conn, :index))
+
+      refute has_element?(index_live, "#property-#{property.id} a", "Delete")
+    end
+
+    test "as an admin, I can delete property from others in listing", %{
+      conn: conn,
+      property_from_another_user: property
+    } do
+      conn = log_in_user(conn, admin_fixture())
+
+      {:ok, index_live, _html} = live(conn, Routes.property_index_path(conn, :index))
+
+      assert index_live |> element("#property-#{property.id} a", "Delete") |> render_click()
+      refute has_element?(index_live, "#property-#{property.id}")
+    end
+
+    test "can't edit property from other user in listing",
+         %{
+           conn: conn,
+           property_from_another_user: property
+         } do
+      assert {:error, {:redirect, %{to: "/"}}} =
+               live(conn, Routes.property_index_path(conn, :edit, property))
+    end
   end
 
   describe "Show" do
@@ -132,6 +209,50 @@ defmodule RealEstateWeb.PropertyLiveTest do
 
       assert html =~ "Property updated successfully"
       assert html =~ "some updated description"
+    end
+
+    test "can't see edit action for property from another user in show page", %{
+      conn: conn,
+      property_from_another_user: property
+    } do
+      {:ok, show_live, _html} = live(conn, Routes.property_show_path(conn, :show, property))
+
+      refute has_element?(show_live, "a", "Edit")
+    end
+
+    test "as an admin, can updates property from others within modal", %{
+      conn: conn,
+      property_from_another_user: property
+    } do
+      conn = log_in_user(conn, admin_fixture())
+
+      {:ok, show_live, _html} = live(conn, Routes.property_show_path(conn, :show, property))
+
+      assert show_live |> element("a", "Edit") |> render_click() =~
+               "Edit Property"
+
+      assert_patch(show_live, Routes.property_show_path(conn, :edit, property))
+
+      assert show_live
+             |> form("#property-form", property: @invalid_attrs)
+             |> render_change() =~ "can&#39;t be blank"
+
+      {:ok, _, html} =
+        show_live
+        |> form("#property-form", property: @update_attrs)
+        |> render_submit()
+        |> follow_redirect(conn, Routes.property_show_path(conn, :show, property))
+
+      assert html =~ "Property updated successfully"
+      assert html =~ "some updated description"
+    end
+
+    test "can't edit property from another user in show page", %{
+      conn: conn,
+      property_from_another_user: property
+    } do
+      assert {:error, {:redirect, %{to: "/"}}} =
+               live(conn, Routes.property_show_path(conn, :edit, property))
     end
   end
 end
